@@ -27,7 +27,7 @@ $rw_competitors = [
     [
         'ai_name'   => 'Claude',
         'project'   => 'RavenWarp',
-        'image'     => '/assets/img/media/Claude_Homepage.png',
+        'image'     => '/assets/img/Claude_home1.png',
         'site_url'  => 'https://ravenwarp.beardedviking.org',
         'repo_url'  => 'https://github.com/BeardedVikingTX/RavenWarp',
         'featured'  => true,
@@ -35,7 +35,7 @@ $rw_competitors = [
     [
         'ai_name'   => 'ChatGPT',
         'project'   => 'Nexora',
-        'image'     => '/assets/img/media/ChatGPT_Homepage.png',
+        'image'     => '/assets/img/ChatGPT_home1.png',
         'site_url'  => 'https://nexora.beardedviking.org',
         'repo_url'  => 'https://github.com/BeardedVikingTX/Nexora',
         'featured'  => false,
@@ -43,7 +43,7 @@ $rw_competitors = [
     [
         'ai_name'   => 'Gemini',
         'project'   => 'Valkyrin',
-        'image'     => '/assets/img/media/Gemini_Homepage.png',
+        'image'     => '/assets/img/Gemini_home1.png',
         'site_url'  => 'https://valkyrin.beardedviking.org',
         'repo_url'  => 'https://github.com/BeardedVikingTX/Valkyrin',
         'featured'  => false,
@@ -51,7 +51,7 @@ $rw_competitors = [
     [
         'ai_name'   => 'Copilot',
         'project'   => 'SagaSphere',
-        'image'     => '/assets/img/media/CoPilot_Homepage.png',
+        'image'     => '/assets/img/CoPilot_home1.png',
         'site_url'  => 'https://sagasphere.beardedviking.org',
         'repo_url'  => 'https://github.com/BeardedVikingTX/SagaSphere',
         'featured'  => false,
@@ -59,7 +59,7 @@ $rw_competitors = [
     [
         'ai_name'   => 'DeepSeek',
         'project'   => 'NexusValhalla',
-        'image'     => '/assets/img/media/DeepSeek_Homepage.png',
+        'image'     => '/assets/img/DeepSeek_Home1.png',
         'site_url'  => 'https://nexusvalhalla.beardedviking.org',
         'repo_url'  => 'https://github.com/BeardedVikingTX/NexusValhalla',
         'featured'  => false,
