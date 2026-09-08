@@ -28,6 +28,7 @@ if (!defined('RAVENWARP_APP')) {
 }
 
 require_once __DIR__ . '/cookies.php';
+require_once __DIR__ . '/remember-me.php';
 
 // ------------------------------------------------------------
 // Dynamic page metadata — every page can override these before

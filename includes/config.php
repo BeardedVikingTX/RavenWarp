@@ -40,9 +40,9 @@ require_once __DIR__ . '/../../rw-secrets.php';
  * ------------------------------------------------------------
  */
 define('RW_DB_HOST', getenv('RW_DB_HOST') ?: '127.0.0.1');
-define('RW_DB_NAME', getenv('RW_DB_NAME') ?: 'beardedviking_ravenwarp');
-define('RW_DB_USER', getenv('RW_DB_USER') ?: 'beardedviking_admin_bvsec');
-define('RW_DB_PASS', getenv('RW_DB_PASS') ?: '{f8m*q5bm*Jg^4ZRM&');
+define('RW_DB_NAME', getenv('RW_DB_NAME') ?: '');
+define('RW_DB_USER', getenv('RW_DB_USER') ?: '');
+define('RW_DB_PASS', getenv('RW_DB_PASS') ?: '');
 define('RW_DB_CHARSET', 'utf8mb4');
 
 /**
