@@ -1,0 +1,26 @@
+[08-Sep-2026 20:36:47 UTC] RavenWarp CONFIG WARNING: RW_ENCRYPTION_KEY or RW_HASH_PEPPER is not set in the environment.
+[08-Sep-2026 20:36:47 UTC] PHP Fatal error:  Uncaught RuntimeException: RavenWarp: RW_HASH_PEPPER is not configured. in /home/beardedviking/ravenwarp.beardedviking.org/includes/encryption.php:107
+Stack trace:
+#0 /home/beardedviking/ravenwarp.beardedviking.org/contact-process.php(88): rw_lookup_hash()
+#1 {main}
+  thrown in /home/beardedviking/ravenwarp.beardedviking.org/includes/encryption.php on line 107
+[08-Sep-2026 20:48:30 UTC] PHP Warning:  Cannot modify header information - headers already sent by (output started at /home/beardedviking/ravenwarp.beardedviking.org/includes/nav.php:81) in /home/beardedviking/ravenwarp.beardedviking.org/register.php on line 25
+[09-Sep-2026 02:34:34 UTC] PHP Warning:  require_once(/home/beardedviking/ravenwarp.beardedviking.org/config/config.php): Failed to open stream: No such file or directory in /home/beardedviking/ravenwarp.beardedviking.org/final_test.php on line 10
+[09-Sep-2026 02:34:34 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/beardedviking/ravenwarp.beardedviking.org/config/config.php' (include_path='.:/opt/alt/php85/usr/share/pear:/opt/alt/php85/usr/share/php:/usr/share/pear:/usr/share/php') in /home/beardedviking/ravenwarp.beardedviking.org/final_test.php:10
+Stack trace:
+#0 {main}
+  thrown in /home/beardedviking/ravenwarp.beardedviking.org/final_test.php on line 10
+[09-Sep-2026 02:41:05 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: Access denied for user 'beardedviking_deepseek'@'localhost' (using password: YES) in /home/beardedviking/ravenwarp.beardedviking.org/db_test.php:10
+Stack trace:
+#0 /home/beardedviking/ravenwarp.beardedviking.org/db_test.php(10): mysqli->__construct()
+#1 {main}
+  thrown in /home/beardedviking/ravenwarp.beardedviking.org/db_test.php on line 10
+[11-Sep-2026 00:44:49 UTC] PHP Warning:  require_once(/home/beardedviking/ravenwarp.beardedviking.org/OLD_SITE/includes/../../rw-secrets.php): Failed to open stream: No such file or directory in /home/beardedviking/ravenwarp.beardedviking.org/OLD_SITE/includes/config.php on line 35
+[11-Sep-2026 00:44:49 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/beardedviking/ravenwarp.beardedviking.org/OLD_SITE/includes/../../rw-secrets.php' (include_path='.:/opt/alt/php85/usr/share/pear:/opt/alt/php85/usr/share/php:/usr/share/pear:/usr/share/php') in /home/beardedviking/ravenwarp.beardedviking.org/OLD_SITE/includes/config.php:35
+Stack trace:
+#0 /home/beardedviking/ravenwarp.beardedviking.org/OLD_SITE/includes/db.php(18): require_once()
+#1 /home/beardedviking/ravenwarp.beardedviking.org/OLD_SITE/includes/remember-me.php(29): require_once('/home/beardedvi...')
+#2 /home/beardedviking/ravenwarp.beardedviking.org/OLD_SITE/includes/header.php(31): require_once('/home/beardedvi...')
+#3 /home/beardedviking/ravenwarp.beardedviking.org/OLD_SITE/index.php(17): require_once('/home/beardedvi...')
+#4 {main}
+  thrown in /home/beardedviking/ravenwarp.beardedviking.org/OLD_SITE/includes/config.php on line 35

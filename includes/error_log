@@ -1,0 +1,7 @@
+[11-Sep-2026 00:44:49 UTC] PHP Warning:  require_once(/home/beardedviking/ravenwarp.beardedviking.org/includes/db.php): Failed to open stream: No such file or directory in /home/beardedviking/ravenwarp.beardedviking.org/includes/telemetry.php on line 21
+[11-Sep-2026 00:44:49 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/beardedviking/ravenwarp.beardedviking.org/includes/db.php' (include_path='.:/opt/alt/php85/usr/share/pear:/opt/alt/php85/usr/share/php:/usr/share/pear:/usr/share/php') in /home/beardedviking/ravenwarp.beardedviking.org/includes/telemetry.php:21
+Stack trace:
+#0 /home/beardedviking/ravenwarp.beardedviking.org/includes/cookies.php(167): require_once()
+#1 /home/beardedviking/ravenwarp.beardedviking.org/includes/header.php(29): require_once('/home/beardedvi...')
+#2 {main}
+  thrown in /home/beardedviking/ravenwarp.beardedviking.org/includes/telemetry.php on line 21

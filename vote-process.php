@@ -60,7 +60,7 @@ $voterName = trim((string) ($_POST['voter_name'] ?? ''));
 $voterEmail = trim((string) ($_POST['voter_email'] ?? ''));
 $votedFor = trim((string) ($_POST['voted_for'] ?? ''));
 
-$allowedProjects = ['RavenWarp', 'Nexora', 'Valkyrin', 'SagaSphere', 'NexusValhalla'];
+$allowedProjects = ['RavenWarp', 'Nexora', 'Valkyrin', 'SagaSphere']; // NexusValhalla removed — disqualified from the race
 
 if ($voterName === '' || mb_strlen($voterName) > 100) {
     rw_vote_respond(false, 'Please enter a valid name.', 422);

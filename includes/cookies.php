@@ -1,76 +1,56 @@
 <?php
 /**
  * ============================================================
- *  RavenWarp :: includes/cookies.php
+ *  RavenWarp :: includes/cookies.php  (Command Deck rebuild)
  * ------------------------------------------------------------
- *  Handles session bootstrapping, secure cookie configuration,
- *  and session-token helper functions.
+ *  Session bootstrapping, secure cookie configuration, session-
+ *  token helpers, CSRF helpers, AND (new) database-backed page-
+ *  view telemetry.
  *
- *  This file MUST be required before any output is sent to the
- *  browser (no whitespace/echo before it in header.php), since
- *  session_start() and setcookie() both need to fire before
- *  headers are sent.
+ *  Function names are UNCHANGED from the previous version —
+ *  register-process.php, login-process.php, vote-process.php,
+ *  contact-process.php, remember-me.php, and dashboard.php all
+ *  call these exact functions and keep working untouched.
  * ============================================================
  */
 
-// Prevent direct access — this file should only ever be pulled
-// in via header.php or another trusted include.
 if (!defined('RAVENWARP_APP')) {
     http_response_code(403);
     die('Direct access is not permitted.');
 }
 
-/**
- * ------------------------------------------------------------
- *  Environment flag
- * ------------------------------------------------------------
- *  Namecheap shared hosting serves over HTTPS once your SSL is
- *  active. Flip this to true only once your domain is confirmed
- *  running on https:// — while it's false, the "secure" cookie
- *  flag is skipped so local/staging testing over http doesn't
- *  silently break your session.
- */
 define('RAVENWARP_FORCE_HTTPS', true);
 
-/**
- * ------------------------------------------------------------
- *  Secure session configuration
- * ------------------------------------------------------------
- *  These must be set BEFORE session_start() is called.
- */
+// ------------------------------------------------------------
+// Secure session configuration — must run BEFORE session_start().
+// ------------------------------------------------------------
 if (session_status() === PHP_SESSION_NONE) {
 
     $isSecureConnection = RAVENWARP_FORCE_HTTPS
         && (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
 
     session_set_cookie_params([
-        'lifetime' => 0,              // Expires when the browser closes
+        'lifetime' => 0,
         'path'     => '/',
-        'domain'   => '',             // Current domain only
+        'domain'   => '',
         'secure'   => $isSecureConnection,
-        'httponly' => true,           // JavaScript can NEVER read this cookie
-        'samesite' => 'Lax',          // CSRF hardening while still allowing normal nav
+        'httponly' => true,
+        'samesite' => 'Lax',
     ]);
 
     session_name('ravenwarp_session');
     session_start();
 }
 
-/**
- * ------------------------------------------------------------
- *  Session Fixation Protection
- * ------------------------------------------------------------
- *  Rotate the session ID periodically so a stolen/guessed
- *  session ID has a short shelf life. This does NOT log the
- *  user out — it just swaps the token underneath them.
- */
+// ------------------------------------------------------------
+// Session fixation protection — rotate ID periodically.
+// ------------------------------------------------------------
 function rw_regenerate_session_if_stale(int $intervalSeconds = 900): void
 {
     if (!isset($_SESSION['rw_last_regen'])) {
         $_SESSION['rw_last_regen'] = time();
         return;
     }
-
     if (time() - $_SESSION['rw_last_regen'] > $intervalSeconds) {
         session_regenerate_id(true);
         $_SESSION['rw_last_regen'] = time();
@@ -78,21 +58,14 @@ function rw_regenerate_session_if_stale(int $intervalSeconds = 900): void
 }
 rw_regenerate_session_if_stale();
 
-/**
- * ------------------------------------------------------------
- *  Session Fingerprint Binding
- * ------------------------------------------------------------
- *  Ties the session lightly to the browser/IP combo that
- *  created it, to make simple session-token theft/replay
- *  noisier to pull off. This is a deterrent layer, not a
- *  silver bullet — pair it with HTTPS + HttpOnly + short
- *  session lifetimes.
- */
+// ------------------------------------------------------------
+// Lightweight session fingerprint binding.
+// ------------------------------------------------------------
 function rw_fingerprint(): string
 {
     $ua = $_SERVER['HTTP_USER_AGENT'] ?? 'unknown';
     $ipOctets = explode('.', $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0');
-    $ipPrefix = implode('.', array_slice($ipOctets, 0, 2)); // tolerate minor IP shifts (mobile networks)
+    $ipPrefix = implode('.', array_slice($ipOctets, 0, 2));
     return hash('sha256', $ua . '|' . $ipPrefix);
 }
 
@@ -106,28 +79,15 @@ function rw_validate_fingerprint(): bool
 }
 
 if (!rw_validate_fingerprint()) {
-    // Fingerprint mismatch — treat as a hijack attempt and nuke the session.
     rw_destroy_session();
 }
 
-/**
- * ------------------------------------------------------------
- *  Public helper functions
- * ------------------------------------------------------------
- */
-
-/**
- * Call this immediately after a successful login to establish
- * an authenticated session token for the user.
- *
- * NOTE: Only store the user ID and lightweight display data in
- * the session. Never store passwords, password hashes, or raw
- * encrypted PII here — pull that fresh from the database when
- * you actually need it.
- */
+// ------------------------------------------------------------
+// Public session helpers (unchanged API).
+// ------------------------------------------------------------
 function rw_set_user_session(int $userId, string $username, string $role = 'member'): void
 {
-    session_regenerate_id(true); // fresh token on every login — prevents fixation
+    session_regenerate_id(true);
 
     $_SESSION['user_id']       = $userId;
     $_SESSION['username']      = $username;
@@ -138,10 +98,6 @@ function rw_set_user_session(int $userId, string $username, string $role = 'memb
     $_SESSION['rw_fingerprint'] = rw_fingerprint();
 }
 
-/**
- * Fully tears down the session — used for logout, or when a
- * fingerprint mismatch suggests session hijacking.
- */
 function rw_destroy_session(): void
 {
     $_SESSION = [];
@@ -158,38 +114,24 @@ function rw_destroy_session(): void
             $params['httponly']
         );
     }
-
     session_destroy();
 }
 
-/**
- * Quick boolean check used all over the site templates.
- */
 function rw_is_logged_in(): bool
 {
     return !empty($_SESSION['logged_in']) && !empty($_SESSION['user_id']);
 }
 
-/**
- * Returns the current user's ID, or null if logged out.
- */
 function rw_current_user_id(): ?int
 {
     return rw_is_logged_in() ? (int) $_SESSION['user_id'] : null;
 }
 
-/**
- * Returns the current user's role, defaulting to 'guest'.
- */
 function rw_current_role(): string
 {
     return $_SESSION['role'] ?? 'guest';
 }
 
-/**
- * Simple role gate — use at the top of any admin-only page.
- * Example: rw_require_role('admin');
- */
 function rw_require_role(string $requiredRole): void
 {
     if (!rw_is_logged_in() || rw_current_role() !== $requiredRole) {
@@ -198,14 +140,9 @@ function rw_require_role(string $requiredRole): void
     }
 }
 
-/**
- * ------------------------------------------------------------
- *  CSRF Token Helpers
- * ------------------------------------------------------------
- *  Generate one token per session and echo it into every form
- *  as a hidden field: <input type="hidden" name="csrf_token"
- *  value="<?= rw_csrf_token() ?>">. Validate it on every POST.
- */
+// ------------------------------------------------------------
+// CSRF helpers (unchanged API).
+// ------------------------------------------------------------
 function rw_csrf_token(): string
 {
     if (empty($_SESSION['csrf_token'])) {
@@ -220,3 +157,12 @@ function rw_validate_csrf(?string $submittedToken): bool
         && !empty($_SESSION['csrf_token'])
         && hash_equals($_SESSION['csrf_token'], $submittedToken);
 }
+
+// ------------------------------------------------------------
+// NEW: database-backed telemetry.
+// Logged here (rather than in header.php) so it fires on EVERY
+// page that bootstraps a session — including any future page
+// that doesn't happen to include header.php.
+// ------------------------------------------------------------
+require_once __DIR__ . '/telemetry.php';
+rw_log_pageview();

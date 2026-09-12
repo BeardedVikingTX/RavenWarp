@@ -1,12 +1,7 @@
 <?php
 /**
  * ============================================================
- *  RavenWarp :: users/dashboard.php
- * ------------------------------------------------------------
- *  The logged-in user's home base: profile card, account stats,
- *  and quick actions. Decrypts first/last name + email (when
- *  present) ONLY for this authenticated, self-view display —
- *  never logged, never sent anywhere else.
+ *  RavenWarp :: users/dashboard.php  (Command Deck rebuild)
  * ============================================================
  */
 
@@ -28,9 +23,6 @@ $pageBodyClass   = 'page-dashboard';
 
 require_once __DIR__ . '/../includes/header.php';
 
-// ------------------------------------------------------------
-// Load the full account record for the logged-in user.
-// ------------------------------------------------------------
 $pdo = rw_db();
 $stmt = $pdo->prepare(
     'SELECT username, slug, account_type, first_name_enc, last_name_enc, email_enc,
@@ -42,13 +34,11 @@ $stmt->execute(['id' => rw_current_user_id()]);
 $rw_user = $stmt->fetch();
 
 if (!$rw_user) {
-    // Session points at a user that no longer exists — clear it out.
     rw_destroy_session();
     header('Location: /login.php');
     exit;
 }
 
-// Decrypt personal fields for this self-view only.
 $rw_first_name = $rw_user['first_name_enc'] ? rw_decrypt($rw_user['first_name_enc']) : null;
 $rw_last_name  = $rw_user['last_name_enc']  ? rw_decrypt($rw_user['last_name_enc'])  : null;
 $rw_email      = $rw_user['email_enc']      ? rw_decrypt($rw_user['email_enc'])      : null;
@@ -56,28 +46,37 @@ $rw_email      = $rw_user['email_enc']      ? rw_decrypt($rw_user['email_enc']) 
 $rw_display_name = trim(($rw_first_name ?? '') . ' ' . ($rw_last_name ?? ''));
 $rw_member_since = date('F Y', strtotime($rw_user['created_at']));
 $rw_last_login   = $rw_user['last_login_at'] ? date('M j, Y \a\t g:i A', strtotime($rw_user['last_login_at'])) : 'This is your first login!';
+$rw_avatar_url   = $rw_user['avatar_path'] ?? null;
 
-$rw_avatar_url = $rw_user['avatar_path'] ?? null; // null falls back to a CSS/icon placeholder below
+// Earned badges, most recent first.
+$badgeStmt = $pdo->prepare(
+    'SELECT b.name, b.description, b.icon, ub.earned_at
+     FROM user_badges ub
+     JOIN badges b ON b.id = ub.badge_id
+     WHERE ub.user_id = :user_id
+     ORDER BY ub.earned_at DESC'
+);
+$badgeStmt->execute(['user_id' => rw_current_user_id()]);
+$rw_badges = $badgeStmt->fetchAll();
 ?>
 
 <section class="rw-section" style="padding-top: 3rem;">
     <div class="rw-section-inner">
 
-        <!-- ================= Profile Header Card ================= -->
+        <!-- ================= Profile Header ================= -->
         <div class="rw-panel" style="padding:0; overflow:hidden; margin-bottom:1.5rem;">
             <div style="height:160px; background:linear-gradient(135deg, rgba(94,232,224,0.18), rgba(255,157,66,0.18)), var(--rw-surface-alt); position:relative;">
                 <?php if ($rw_user['banner_path']): ?>
-                    <img src="<?= htmlspecialchars($rw_user['banner_path'], ENT_QUOTES, 'UTF-8') ?>" alt=""
-                         style="width:100%; height:100%; object-fit:cover;">
+                    <img src="<?= htmlspecialchars($rw_user['banner_path'], ENT_QUOTES, 'UTF-8') ?>" alt="" style="width:100%; height:100%; object-fit:cover;">
                 <?php endif; ?>
             </div>
 
             <div style="padding: 0 2rem 1.75rem; display:flex; flex-wrap:wrap; gap:1.5rem; align-items:flex-end; margin-top:-46px;">
                 <div style="width:92px; height:92px; border-radius:50%; border:4px solid var(--rw-surface); background:var(--rw-surface-alt); display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0;">
                     <?php if ($rw_avatar_url): ?>
-                        <img src="<?= htmlspecialchars($rw_avatar_url, ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars($rw_user['username'], ENT_QUOTES, 'UTF-8') ?>'s avatar" style="width:100%; height:100%; object-fit:cover;">
+                        <img src="<?= htmlspecialchars($rw_avatar_url, ENT_QUOTES, 'UTF-8') ?>" alt="" style="width:100%; height:100%; object-fit:cover;">
                     <?php else: ?>
-                        <i class="fa-solid fa-user-astronaut" style="font-size:2.2rem; color:var(--rw-frost);"></i>
+                        <?php rw_icon('user-round', 'rw-icon-xl'); ?>
                     <?php endif; ?>
                 </div>
 
@@ -94,30 +93,18 @@ $rw_avatar_url = $rw_user['avatar_path'] ?? null; // null falls back to a CSS/ic
                     </div>
                 </div>
 
-                <a href="/logout.php" class="btn rw-btn rw-btn-login" style="align-self:center;">
-                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                <a href="/logout.php" class="rw-btn rw-btn-login" style="align-self:center;">
+                    <?php rw_icon('log-out'); ?> Logout
                 </a>
             </div>
         </div>
 
-        <!-- ================= Stats Grid ================= -->
+        <!-- ================= Stats ================= -->
         <div class="rw-reward-grid" style="margin-bottom:1.5rem;">
-            <div class="rw-panel rw-reward-card">
-                <div class="rw-reward-icon"><i class="fa-solid fa-star"></i></div>
-                <div class="rw-reward-label"><?= (int) $rw_user['reputation_points'] ?> Reputation</div>
-            </div>
-            <div class="rw-panel rw-reward-card">
-                <div class="rw-reward-icon"><i class="fa-solid fa-calendar-days"></i></div>
-                <div class="rw-reward-label">Member Since<br><?= htmlspecialchars($rw_member_since, ENT_QUOTES, 'UTF-8') ?></div>
-            </div>
-            <div class="rw-panel rw-reward-card">
-                <div class="rw-reward-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
-                <div class="rw-reward-label" style="font-size:0.95rem;">Last Login<br><?= htmlspecialchars($rw_last_login, ENT_QUOTES, 'UTF-8') ?></div>
-            </div>
-            <div class="rw-panel rw-reward-card">
-                <div class="rw-reward-icon"><i class="fa-solid fa-award"></i></div>
-                <div class="rw-reward-label">0 Badges Earned</div>
-            </div>
+            <div class="rw-panel rw-reward-card"><div class="rw-reward-icon"><?php rw_icon('star', 'rw-icon-lg'); ?></div><div class="rw-reward-label"><?= (int) $rw_user['reputation_points'] ?> Reputation</div></div>
+            <div class="rw-panel rw-reward-card"><div class="rw-reward-icon"><?php rw_icon('calendar-days', 'rw-icon-lg'); ?></div><div class="rw-reward-label">Member Since<br><?= htmlspecialchars($rw_member_since, ENT_QUOTES, 'UTF-8') ?></div></div>
+            <div class="rw-panel rw-reward-card"><div class="rw-reward-icon"><?php rw_icon('clock', 'rw-icon-lg'); ?></div><div class="rw-reward-label" style="font-size:0.95rem;">Last Login<br><?= htmlspecialchars($rw_last_login, ENT_QUOTES, 'UTF-8') ?></div></div>
+            <div class="rw-panel rw-reward-card"><div class="rw-reward-icon"><?php rw_icon('badge-check', 'rw-icon-lg'); ?></div><div class="rw-reward-label"><?= count($rw_badges) ?> Badge<?= count($rw_badges) === 1 ? '' : 's' ?> Earned</div></div>
         </div>
 
         <div class="row g-4">
@@ -149,15 +136,32 @@ $rw_avatar_url = $rw_user['avatar_path'] ?? null; // null falls back to a CSS/ic
                 <div class="rw-panel" style="height:100%;">
                     <h2 class="rw-footer-heading">Quick Actions</h2>
                     <div style="display:flex; flex-direction:column; gap:0.6rem;">
-                        <a href="#" class="btn rw-btn rw-btn-login" style="text-align:left; opacity:0.6; cursor:not-allowed;" aria-disabled="true"><i class="fa-solid fa-user-pen"></i> Edit Profile <span style="float:right; font-size:0.75rem;">Coming Soon</span></a>
-                        <a href="#" class="btn rw-btn rw-btn-login" style="text-align:left; opacity:0.6; cursor:not-allowed;" aria-disabled="true"><i class="fa-solid fa-message"></i> Messages <span style="float:right; font-size:0.75rem;">Coming Soon</span></a>
-                        <a href="#" class="btn rw-btn rw-btn-login" style="text-align:left; opacity:0.6; cursor:not-allowed;" aria-disabled="true"><i class="fa-solid fa-people-group"></i> Friends <span style="float:right; font-size:0.75rem;">Coming Soon</span></a>
+                        <span class="rw-btn rw-btn-login" style="text-align:left; opacity:0.6; cursor:not-allowed;"><?php rw_icon('user-pen'); ?> Edit Profile <span style="margin-left:auto; font-size:0.75rem;">Coming Soon</span></span>
+                        <span class="rw-btn rw-btn-login" style="text-align:left; opacity:0.6; cursor:not-allowed;"><?php rw_icon('message-square'); ?> Messages <span style="margin-left:auto; font-size:0.75rem;">Coming Soon</span></span>
+                        <span class="rw-btn rw-btn-login" style="text-align:left; opacity:0.6; cursor:not-allowed;"><?php rw_icon('users'); ?> Friends <span style="margin-left:auto; font-size:0.75rem;">Coming Soon</span></span>
                         <?php if ($rw_user['role'] === 'admin'): ?>
-                        <a href="/admin/index.php" class="btn rw-btn rw-btn-register" style="text-align:left;"><i class="fa-solid fa-satellite-dish"></i> Admin Panel</a>
+                        <a href="/admin/index.php" class="rw-btn rw-btn-register" style="text-align:left;"><?php rw_icon('radar'); ?> Admin Panel</a>
                         <?php endif; ?>
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- ================= Badges ================= -->
+        <div class="rw-panel" style="margin-top:1.5rem;">
+            <h2 class="rw-footer-heading">Badges</h2>
+            <?php if (empty($rw_badges)): ?>
+                <p style="color:var(--rw-text-muted); margin:0;">No badges earned yet — post, connect, and comment to start collecting them.</p>
+            <?php else: ?>
+                <div class="rw-reward-grid">
+                    <?php foreach ($rw_badges as $rw_badge): ?>
+                        <div class="rw-panel rw-reward-card" title="<?= htmlspecialchars($rw_badge['description'], ENT_QUOTES, 'UTF-8') ?>">
+                            <div class="rw-reward-icon"><?php rw_icon($rw_badge['icon'], 'rw-icon-lg'); ?></div>
+                            <div class="rw-reward-label"><?= htmlspecialchars($rw_badge['name'], ENT_QUOTES, 'UTF-8') ?></div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
         </div>
 
     </div>
